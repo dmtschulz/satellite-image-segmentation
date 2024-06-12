@@ -3,7 +3,7 @@ import pyrosm
 import geopandas as gpd
 
 
-pyrosm_path = "./pyrosm_cities"
+pyrosm_path = "./acquisition_alignment/pyrosm_cities"
 # Ensure the directory exists
 os.makedirs(pyrosm_path, exist_ok=True)
 
