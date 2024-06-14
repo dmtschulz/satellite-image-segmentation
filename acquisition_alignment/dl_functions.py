@@ -2,13 +2,8 @@ import os
 import pyrosm
 import geopandas as gpd
 
-
-pyrosm_path = "./acquisition_alignment/pyrosm_cities"
-# Ensure the directory exists
-os.makedirs(pyrosm_path, exist_ok=True)
-
 #### Function for Downloading and Processing OSM Data
-def download_and_process_osm_data(city_name):
+def download_and_process_osm_data(city_name, pyrosm_path):
     print(f"Downloading and processing OSM data for {city_name}...")
 
     # Download the data into specified directory
@@ -22,22 +17,47 @@ def download_and_process_osm_data(city_name):
     buildings = osm.get_buildings()
     print("OSM data get_buildings done.")
 
+    # Convert to GeoDataFrame
+    buildings_gdf = gpd.GeoDataFrame(buildings, geometry='geometry', crs="EPSG:4326")
+    # buildings_gdf = buildings_gdf[buildings_gdf.geometry.type.isin(['Polygon', 'MultiPolygon'])]
+
+    print(f"OSM for {city_name} converted into GeoDataFrame, with crs=EPSG:4326 done.")
+
     # Retrieve boundaries
     boundaries = osm.get_boundaries()
     minx, miny, maxx, maxy = boundaries.total_bounds
-    north, south, west, east = maxy, miny, minx, maxx
+    
+    # Calculate the center of the bounding box
+    center_x = (minx + maxx) / 2
+    center_y = (miny + maxy) / 2
+    
+    # Determine the size of the square bounding box
+    width = maxx - minx
+    height = maxy - miny
+    max_dimension = max(width, height)
+
+    # Define the new bounds for the square bounding box
+    minx_square = center_x - max_dimension / 2
+    maxx_square = center_x + max_dimension / 2
+    miny_square = center_y - max_dimension / 2
+    maxy_square = center_y + max_dimension / 2        
+
+    north, south, west, east = maxy_square, miny_square, minx_square, maxx_square
     print("OSM data get_boundaries done.")
 
-    # Convert to GeoDataFrame
-    gdf = gpd.GeoDataFrame(buildings, geometry='geometry', crs="EPSG:4326")
-    print(f"OSM for {city_name} converted into GeoDataFrame, with crs=EPSG:4326 done.")
+    #buildings_gdf.to_file(pyrosm_path+f'buildings_gdf_{city_name}.shp')
+    #print("Buildings GeoDataFrame saved to a .shp file.")
 
-    return gdf, [north, south, west, east]
+    #with open(pyrosm_path+f"boundaries_{city_name}", "w") as file:
+    #    file.write([north, south, west, east])
+    #print("Boundaries saved to a shp file.")
+    
+    return buildings_gdf, [north, south, west, east]
 
 
 
 #### Function for Downloading Sentinel-2 L2A Data
-def download_sentinel2_images_openeo(connection, bbox, dates_interval, cloud_cover_percentage, city):
+def download_sentinel2_images_openeo(connection, bbox, dates_interval, cloud_cover_percentage, city, output_path):
     print("Downloading Sentinel-2 L2a images from OpenEO...")
 
     # Define the area of interest
@@ -53,8 +73,8 @@ def download_sentinel2_images_openeo(connection, bbox, dates_interval, cloud_cov
         collection_id = "SENTINEL2_L2A",
         spatial_extent = spatial_extent,
         temporal_extent = dates_interval,
-        bands = ["B04", "B03", "B02", "B08"] # Red, Green, Blue, Infrared (nir) bands
-        # max_cloud_cover = cloud_cover_percentage
+        bands = ["B04", "B03", "B02", "B08"], # Red, Green, Blue, Infrared (nir) bands
+        max_cloud_cover = cloud_cover_percentage
     )
 
     result = datacube.save_result("GTiff")
@@ -64,6 +84,6 @@ def download_sentinel2_images_openeo(connection, bbox, dates_interval, cloud_cov
     
     # Starts the job and waits until it finished to download the result.
     job.start_and_wait()
-    job.get_results().download_files(f"openeo_cities/{city}/")
+    job.get_results().download_files(output_path+city)
     
     print("Sentinel-2 images downloaded successfully.")
