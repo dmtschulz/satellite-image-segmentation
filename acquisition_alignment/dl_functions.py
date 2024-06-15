@@ -25,24 +25,9 @@ def download_and_process_osm_data(city_name, pyrosm_path):
 
     # Retrieve boundaries
     boundaries = osm.get_boundaries()
-    minx, miny, maxx, maxy = boundaries.total_bounds
-    
-    # Calculate the center of the bounding box
-    center_x = (minx + maxx) / 2
-    center_y = (miny + maxy) / 2
-    
-    # Determine the size of the square bounding box
-    width = maxx - minx
-    height = maxy - miny
-    max_dimension = max(width, height)
+    minx, miny, maxx, maxy = boundaries.total_bounds      
 
-    # Define the new bounds for the square bounding box
-    minx_square = center_x - max_dimension / 2
-    maxx_square = center_x + max_dimension / 2
-    miny_square = center_y - max_dimension / 2
-    maxy_square = center_y + max_dimension / 2        
-
-    north, south, west, east = maxy_square, miny_square, minx_square, maxx_square
+    north, south, west, east = maxy, miny, minx, maxx
     print("OSM data get_boundaries done.")
 
     #buildings_gdf.to_file(pyrosm_path+f'buildings_gdf_{city_name}.shp')
