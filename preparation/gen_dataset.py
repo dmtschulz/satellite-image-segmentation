@@ -53,25 +53,20 @@ def pair_files(image_dir, mask_dir):
     
     return paired_files
 
-def split_and_save(paired_files, output_dir, test_split=0.2, val_split=0.2, random_state=42):
+def split_and_save(paired_files, output_dir, val_split=0.2, random_state=42):
     # Create output directories
     train_img_dir = os.path.join(output_dir, 'train/images')
     train_mask_dir = os.path.join(output_dir, 'train/masks')
     val_img_dir = os.path.join(output_dir, 'val/images')
     val_mask_dir = os.path.join(output_dir, 'val/masks')
-    test_img_dir = os.path.join(output_dir, 'test/images')
-    test_mask_dir = os.path.join(output_dir, 'test/masks')
     
     os.makedirs(train_img_dir, exist_ok=True)
     os.makedirs(train_mask_dir, exist_ok=True)
     os.makedirs(val_img_dir, exist_ok=True)
     os.makedirs(val_mask_dir, exist_ok=True)
-    os.makedirs(test_img_dir, exist_ok=True)
-    os.makedirs(test_mask_dir, exist_ok=True)
     
-    # Split the data
-    train_val_files, test_files = train_test_split(paired_files, test_size=test_split, random_state=random_state)
-    train_files, val_files = train_test_split(train_val_files, test_size=val_split, random_state=random_state)
+    # Split the data into train and validation sets
+    train_files, val_files = train_test_split(paired_files, test_size=val_split, random_state=random_state)
     
     # Function to copy files to respective directories
     def copy_files(file_pairs, img_dir, mask_dir):
@@ -79,10 +74,8 @@ def split_and_save(paired_files, output_dir, test_split=0.2, val_split=0.2, rand
             shutil.copy(img_file, img_dir)
             shutil.copy(mask_file, mask_dir)
     
-    # Copy the files to respective directories
+    # Copy the files to respective directories for train and validation
     copy_files(train_files, train_img_dir, train_mask_dir)
     copy_files(val_files, val_img_dir, val_mask_dir)
-    copy_files(test_files, test_img_dir, test_mask_dir)
     
-    print(f"Saved {len(train_files)} train, {len(val_files)} validation, and {len(test_files)} test file pairs.")
-    
+    print(f"Saved {len(train_files)} train and {len(val_files)} validation file pairs.")

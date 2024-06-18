@@ -22,6 +22,7 @@ def stretch_contrast(band, low_percent=2, high_percent=98):
 def plot_city_buildings(city_name, buildings, output_image_path):
     # Plot the building footprints
     fig, ax = plt.subplots(figsize=(10, 10))
+
     buildings.plot(ax=ax, color='blue', edgecolor='none', alpha=0.7)
 
     # Set title and labels
@@ -31,7 +32,7 @@ def plot_city_buildings(city_name, buildings, output_image_path):
     
     # Save the figure
     plt.savefig(output_image_path+"osm_buildings", bbox_inches='tight', pad_inches=0)
-    plt.show()
+    # plt.show()
     plt.close()
 
 ### Save RGB Image
@@ -55,7 +56,7 @@ def rgb_image(sentinel2_path, output_image_path):
     plt.imshow(rgb) # Render the image array
     plt.axis('off')  # Turn off axis
     plt.savefig(output_image_path+"rgb_bands", bbox_inches='tight', pad_inches=0)
-    plt.show()  # Show the image
+    # plt.show()  # Show the image
     plt.close()
 
 ### Save Single Band Image
@@ -72,7 +73,7 @@ def single_band_image(sentinel2_path, output_image_path, band_index):
     plt.imshow(band_stretched, cmap="gray") # Render the image array
     plt.axis('off')  # Turn off axis
     plt.savefig(output_image_path+"single_band", bbox_inches='tight', pad_inches=0)
-    plt.show()  # Show the image
+    # plt.show()  # Show the image
     plt.close()
 
 
@@ -96,7 +97,6 @@ def overlay_image(buildings_gdf, sentinel2_path, output_image_path, band_index):
     # Load the satellite image
     with rasterio.open(sentinel2_path) as src:
         sentinel2_image = src.read(band_index, masked=True) # * 0.0001  # Read the first band, considering any nodata value as masked
-        # leave dark, dont strech...
         extent = rasterio.plot.plotting_extent(src)  # Get extent of the image
 
     fig, ax = plt.subplots(figsize=(10, 10))
@@ -111,14 +111,14 @@ def overlay_image(buildings_gdf, sentinel2_path, output_image_path, band_index):
     plt.savefig(output_image_path+"overlay_buildings", bbox_inches='tight', pad_inches=0)  # removes extra white space around figure
 
     # Display the figure
-    plt.show()
+    # plt.show()
     plt.close()
 
 ### Save IRB Image
 def irb_image(sentinel2_path, output_image_path):
     # Load the Sentinel-2 image
     with rasterio.open(sentinel2_path) as src:
-        # Read the Red, Green, and Blue bands by their indices (B04, B03, B02)
+        # Read the Red, Green, and Blue and NIR bands by their indices (B04, B03, B02, B08)
         red = src.read(1) # * 0.0001 # B04
         # green = src.read(2) # * 0.0001 # B03
         blue = src.read(3) # * 0.0001 # B02
@@ -138,5 +138,5 @@ def irb_image(sentinel2_path, output_image_path):
     plt.imshow(irb) # Render the image array
     plt.axis('off')  # Turn off axis
     plt.savefig(output_image_path+"irb", bbox_inches='tight', pad_inches=0)
-    plt.show()  # Show the image
+    # plt.show()  # Show the image
     plt.close()

@@ -5,7 +5,7 @@ import numpy as np
 from torch.utils.data import Dataset
 
 class BuildingDataset(Dataset):
-    def __init__(self, image_dir, mask_dir, transform=None):
+    def __init__(self, image_dir, mask_dir, transform):
         self.image_dir = image_dir
         self.mask_dir = mask_dir
         self.transform = transform

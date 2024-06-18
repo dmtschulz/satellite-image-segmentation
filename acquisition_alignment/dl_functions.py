@@ -2,24 +2,34 @@ import os
 import pyrosm
 import geopandas as gpd
 
-#### Function for Downloading and Processing OSM Data
-def download_and_process_osm_data(city_name, pyrosm_path):
-    print(f"Downloading and processing OSM data for {city_name}...")
+# Function for Downloading
+def download_osm(city_name, pyrosm_path):
+    print(f"Downloading OSM data for {city_name}...")
 
     # Download the data into specified directory
     fp = pyrosm.get_data(f"{city_name}", directory=pyrosm_path)
     print(f"{city_name} data was downloaded to:", fp)
 
-    # Initialize the OSM object 
-    osm = pyrosm.OSM(fp)
+def get_building_bbox(pyrosm_path, city_name):
+    if city_name == "Berlin":
+        bbox = [13.294333, 52.454927, 13.500205, 52.574409]
+        # Initialize the OSM object
+    else:
+        bbox = None
+    
+    fp = pyrosm.get_data(f"{city_name}", directory=pyrosm_path)
+    print(fp)
 
+    # Initialize the OSM object 
+    osm = pyrosm.OSM(fp, bounding_box=bbox)
+    
     # Retrieve building data
     buildings = osm.get_buildings()
     print("OSM data get_buildings done.")
 
     # Convert to GeoDataFrame
     buildings_gdf = gpd.GeoDataFrame(buildings, geometry='geometry', crs="EPSG:4326")
-    # buildings_gdf = buildings_gdf[buildings_gdf.geometry.type.isin(['Polygon', 'MultiPolygon'])]
+    buildings_gdf = buildings_gdf[buildings_gdf.geometry.type.isin(['Polygon', 'MultiPolygon'])]
 
     print(f"OSM for {city_name} converted into GeoDataFrame, with crs=EPSG:4326 done.")
 
@@ -29,20 +39,13 @@ def download_and_process_osm_data(city_name, pyrosm_path):
 
     north, south, west, east = maxy, miny, minx, maxx
     print("OSM data get_boundaries done.")
-
-    #buildings_gdf.to_file(pyrosm_path+f'buildings_gdf_{city_name}.shp')
-    #print("Buildings GeoDataFrame saved to a .shp file.")
-
-    #with open(pyrosm_path+f"boundaries_{city_name}", "w") as file:
-    #    file.write([north, south, west, east])
-    #print("Boundaries saved to a shp file.")
     
-    return buildings_gdf, [north, south, west, east]
+    return [buildings_gdf, [north, south, west, east]]
 
 
 
 #### Function for Downloading Sentinel-2 L2A Data
-def download_sentinel2_images_openeo(connection, bbox, dates_interval, cloud_cover_percentage, city, output_path):
+def download_sentinel2_images_openeo(connection, bbox, dates_interval, cloud_cover_percentage, output_path):
     print("Downloading Sentinel-2 L2a images from OpenEO...")
 
     # Define the area of interest
@@ -69,6 +72,6 @@ def download_sentinel2_images_openeo(connection, bbox, dates_interval, cloud_cov
     
     # Starts the job and waits until it finished to download the result.
     job.start_and_wait()
-    job.get_results().download_files(output_path+city)
+    job.get_results().download_files(output_path)
     
     print("Sentinel-2 images downloaded successfully.")
