@@ -1,18 +1,14 @@
 from rasterio.features import geometry_mask
 import numpy as np
+import torch
 
-# Create a binary mask of the buildings
-def create_building_mask(buildings_gdf, transform, width, height):
-    buildings_mask = geometry_mask(
-        [geom for geom in buildings_gdf.geometry],
-        transform=transform,
-        invert=True,
-        out_shape=(height, width)
-    )
-    return buildings_mask.astype(np.uint8) # binary mask with 0 and 1
+def pixel_filter(mask_patch, pixel_fraction_limit=0.0002):
+    pixel_fraction = np.mean(mask_patch == 1)
+    
+    return pixel_fraction < pixel_fraction_limit
 
 def cloud_classifier(patch, threshold=0.8, cloud_fraction_limit=0.05):
-    # Example: Use the mean of the blue band to classify clouds
+    # Access the blue band (index 2)
     blue_band = patch[:, :, 2]
     cloud_fraction = np.mean(blue_band > threshold)
     
@@ -21,11 +17,17 @@ def cloud_classifier(patch, threshold=0.8, cloud_fraction_limit=0.05):
 def extract_patches(image, mask, patch_size):
     patches_image = []
     patches_mask = []
-    # start: 0 -> patch_size, black margin on borders?....
-    for i in range(patch_size, image.shape[0] - patch_size + 1, patch_size): # H
-        for j in range(patch_size, image.shape[1] - patch_size + 1, patch_size): # W
-            patch_img = image[i:i + patch_size, j:j + patch_size, :]
+    
+    height, width, _ = image.shape
+    
+    for i in range(patch_size, height - patch_size + 1, patch_size):
+        for j in range(patch_size, width - patch_size + 1, patch_size):
             patch_msk = mask[i:i + patch_size, j:j + patch_size]
+
+            if pixel_filter(patch_msk): # skip too black masks
+                continue
+
+            patch_img = image[i:i + patch_size, j:j + patch_size, :]
 
             if cloud_classifier(patch_img):
                 patches_image.append(patch_img)
@@ -34,4 +36,8 @@ def extract_patches(image, mask, patch_size):
     patches_image = np.stack(patches_image)
     patches_mask = np.stack(patches_mask)
     
-    return patches_image, patches_mask
+    # Convert to torch tensors
+    tensor_image = torch.tensor(patches_image, dtype=torch.float32)
+    tensor_mask = torch.tensor(patches_mask, dtype=torch.long)
+    
+    return tensor_image, tensor_mask
