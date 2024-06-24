@@ -2,6 +2,16 @@ from rasterio.features import geometry_mask
 import numpy as np
 import torch
 
+# Create a binary mask of the buildings
+def create_building_mask(buildings_gdf, transform, width, height):
+    buildings_mask = geometry_mask(
+        [geom for geom in buildings_gdf.geometry],
+        transform=transform,
+        invert=True,
+        out_shape=(height, width)
+    )
+    return buildings_mask.astype(np.uint8)
+
 def pixel_filter(mask_patch, pixel_fraction_limit=0.0002):
     pixel_fraction = np.mean(mask_patch == 1)
     
