@@ -1,0 +1,9 @@
+C = 4  # Number of channels in the input images (RGB+NIR)
+LEARNING_RATE = 0.001  # Learning rate for the optimizer
+BATCH_SIZE = 32  # Batch size for training
+NUM_EPOCHS = 10  # Number of epochs for training
+WEIGHT_DECAY = 0 # 1e-4  # Weight decay for regularization
+# Early stopping hyperparameters
+patience = 3
+delta = 0.001
+# optimizer tpye
