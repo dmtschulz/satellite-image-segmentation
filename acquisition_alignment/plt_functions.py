@@ -76,28 +76,14 @@ def single_band_image(sentinel2_path, output_image_path, band_index):
     # plt.show()  # Show the image
     plt.close()
 
-
-# Define function to get CRS of the satellite image
-def get_epsg_from_tif(tif_path):
-    with rasterio.open(tif_path) as src:
-        return src.crs.to_epsg()
-
-# Define function to reproject GeoDataFrame
-def reproject_gdf(gdf, target_crs):
-    return gdf.to_crs(target_crs)
-
 ### Save Overlay Image
 def overlay_image(buildings_gdf, sentinel2_path, output_image_path, band_index):
-    # Get CRS of the satellite image
-    satellite_crs = get_epsg_from_tif(sentinel2_path)
-
-    # Reproject (OSM) buildings to match CRS of the satellite image
-    gdf_projected = reproject_gdf(buildings_gdf, satellite_crs)
-
-    # Load the satellite image
     with rasterio.open(sentinel2_path) as src:
         sentinel2_image = src.read(band_index, masked=True) # * 0.0001  # Read the first band, considering any nodata value as masked
-        extent = rasterio.plot.plotting_extent(src)  # Get extent of the image
+        satellite_crs = src.crs
+    gdf_projected = buildings_gdf.to_crs(satellite_crs) # OSM to Satellite
+
+    extent = rasterio.plot.plotting_extent(src)  # Get extent of the image
 
     fig, ax = plt.subplots(figsize=(10, 10))
 

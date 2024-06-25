@@ -2,7 +2,7 @@ import os
 import pyrosm
 import geopandas as gpd
 
-# Function for Downloading
+# Function for Downloading OSM files
 def download_osm(city_name, pyrosm_path):
     print(f"Downloading OSM data for {city_name}...")
 
@@ -10,10 +10,10 @@ def download_osm(city_name, pyrosm_path):
     fp = pyrosm.get_data(f"{city_name}", directory=pyrosm_path)
     print(f"{city_name} data was downloaded to:", fp)
 
+# Function to get buildings and bboxes of cities from OSM files
 def get_building_bbox(pyrosm_path, city_name):
     if city_name == "Berlin":
-        bbox = [13.294333, 52.454927, 13.500205, 52.574409]
-        # Initialize the OSM object
+        bbox = [13.294333, 52.454927, 13.500205, 52.574409] # Handle Berlin specially
     else:
         bbox = None
     
@@ -29,7 +29,7 @@ def get_building_bbox(pyrosm_path, city_name):
 
     # Convert to GeoDataFrame
     buildings_gdf = gpd.GeoDataFrame(buildings, geometry='geometry', crs="EPSG:4326")
-    buildings_gdf = buildings_gdf[buildings_gdf.geometry.type.isin(['Polygon', 'MultiPolygon'])]
+    buildings_gdf = buildings_gdf[buildings_gdf.geometry.type.isin(['Polygon', 'MultiPolygon'])] # Do not want buildings on boundaries. The have different types like Multiline
 
     print(f"OSM for {city_name} converted into GeoDataFrame, with crs=EPSG:4326 done.")
 
@@ -44,7 +44,7 @@ def get_building_bbox(pyrosm_path, city_name):
 
 
 
-#### Function for Downloading Sentinel-2 L2A Data
+# Function for Downloading Sentinel-2 L2A Data
 def download_sentinel2_images_openeo(connection, bbox, dates_interval, cloud_cover_percentage, output_path):
     print("Downloading Sentinel-2 L2a images from OpenEO...")
 
