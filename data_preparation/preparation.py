@@ -23,7 +23,8 @@ def calculate_building_pixel_ratio(mask):
 def cloud_classifier(patch, threshold=0.8, cloud_fraction_limit=0.05):
     """
     I used this function with normalized bands, thats why the threshold has this value.
-    In the current version of the project, this function is not beeing used.
+    In the current version of the project, this function is not beeing used since
+    I pass a cloud coverage parameter to the provider.
     """
     # Access the blue band (index 2)
     blue_band = patch[:, :, 2]
