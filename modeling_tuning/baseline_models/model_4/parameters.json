@@ -1,0 +1,24 @@
+{
+    "model_id": 4,
+    "model_name": "baseline",
+    "batch size": 8,
+    "in_channels": 4,
+    "optimizer": "Adam",
+    "learning_rate": 0.0008,
+    "weight_decay": 0.0005,
+    "num_epochs": 4,
+    "patience": 1,
+    "delta": 0.05,
+    "train_losses": [
+        2.6177228749648997,
+        0.22797163089055655
+    ],
+    "val_losses": [
+        0.3141973614692688,
+        0.3040735423564911
+    ],
+    "val_loss_train_loss_gap": -0.07610191146593454,
+    "avg_train_losses": 1.422847252927728,
+    "avg_val_losses": 0.30913545191287994,
+    "IoU": 0.3015806972980499
+}

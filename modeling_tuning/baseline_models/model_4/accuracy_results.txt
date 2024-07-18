@@ -1,0 +1,1 @@
+acquisition_alignment/openeo_cities/Berlin/Berlin.tif: 0.8400
